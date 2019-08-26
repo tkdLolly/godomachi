@@ -8,47 +8,38 @@ import random
 
 def x(cs):
     return cs[0]
-
 def y(cs):
     return cs[1]
 
 def up(cs):
     return x(cs), y(cs) + 1
-
 def down(cs):
     return x(cs), y(cs) - 1
-
 def left(cs):
     return x(cs) - 1, y(cs)
-
 def right(cs):
     return x(cs) + 1, y(cs)
-
 def neighbours(cs):
     return up(cs), down(cs), left(cs), right(cs)
 
 def rotate_cw90(cs):
     return y(cs), -x(cs)
-
 def reflect_x(cs):
     return -x(cs),  y(cs)
 
 
 class Polyomino:
-
     sizelimit = 100
 
     def __init__(self, coords = []):
         self.coords = list(coords)
         self.history = []
 
-    @property
-    def number_to_cell(self):
-        return dict(enumerate(self.playfield, 1))
+    def numbers_to_cells(self, numbers):
+        return [self.playfield[n-1] for n in numbers]
 
-    @property
-    def cell_to_number(self):
-        return dict((self.playfield[n], n+1) for n in range(self.size_existing))
+    def cell_to_number(self, cell):
+        return dict((self.playfield[n], n+1) for n in range(self.size_existing))[cell]
 
     def __str__(self):
         boxes = []
@@ -84,7 +75,7 @@ class Polyomino:
             return ' '
         def middle(cs):
             if cs in self.playfield:
-                n = self.cell_to_number[cs]
+                n = self.cell_to_number(cs)
                 if n < 10:
                     return ' {0} '.format(n)
                 if n < 100:
@@ -102,11 +93,9 @@ class Polyomino:
             boxes.append(top(j))
             boxes.append(edges(j))
         boxes.append(top(-1))
-
         return '\n'.join(boxes)
 
-    @property
-    def equivalents(self):
+    def get_equivalents(self):
         cw90 = self.tf_rotate_cw90()
         cw180 = cw90.tf_rotate_cw90()
         cw270 = cw180.tf_rotate_cw90()
@@ -116,8 +105,8 @@ class Polyomino:
         return eqs
 
     def __eq__(self, poly):
-        for p in self.equivalents:
-            for q in poly.equivalents:
+        for p in self.get_equivalents():
+            for q in poly.get_equivalents():
                 if p.coords == q.coords:
                     return True
         return False
@@ -128,7 +117,6 @@ class Polyomino:
         self.coords = [(x(cs) - x_min, y(cs) - y_min) for cs in self.coords]
         self.coords.sort(key=x)
         self.coords.sort(key=y, reverse=True)
-
         self.history = [[(x(cs) - x_min, y(cs) - y_min) for cs in move] for move in self.history]
 
     def expand_by(self, size):
@@ -243,5 +231,10 @@ class Polyomino:
         return valids
 
     def play(self, coords):
-        #assert self.is_valid_move(coords), 'Invalid move'
+        if not self.is_valid_move(coords):
+            raise IllegalMoveException
         self.history.append(coords)
+
+
+class IllegalMoveException(Exception):
+    pass

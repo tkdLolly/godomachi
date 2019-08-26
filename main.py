@@ -20,7 +20,7 @@ title_godomati = Polyomino([
 plaque = [
     '',
     '          G o d o m a c h i',
-    '                               v1.0.0'
+    '                               v1.0.1'
 ]
 
 #############
@@ -33,7 +33,6 @@ class Scene:
         if not doe:
             exit()
         self.dialogue, self.options, self.exit_to = doe
-        cls()
         self.main()
 
     def print_dialogue(self):
@@ -50,9 +49,13 @@ class Scene:
             name = self.options[i]
         except KeyError:
             self.take_input()
-        scenes[name]()
+        if name.isdigit():
+            Game([0, int(name)])
+        else:
+            scenes[name]()
 
     def main(self):
+        cls()
         self.print_dialogue()
         self.take_input()
 
@@ -75,34 +78,38 @@ options_pregame = {
 
 class Player:
 
-    def __init__(self, level = 0):
+    def __init__(self, level=0):
         self.level = level
 
-    def play(self, game):
+    def play(self, game, first_try=True):
         def retry():
-            game.show_board()
+            self.play(game, False)
+        game.show_board()
+        if not first_try:
             print('Try again')
-            return take_moves()
         if self.level:
+            print('Computer is thinking...')
             game.play(random.choice(game.get_all_valid_movesets()))
             input('ok>>> ')
         else:
             print('Use commas to separate chosen values.')
             def take_moves():
                 moveset = []
-                for n, p in enumerate(game.polys, 1):
-                    i = input('Player {0} - Polyomino {1} >>> '.format(self.number, n))
-                    try:
-                        moveset.append([p.number_to_cell[int(cs)] for cs in i.split(',')])
-                    except (KeyError, IndexError, ValueError):
-                        return retry()
-                if game.is_valid_moveset(moveset):
-                    return moveset
-                return retry()
-            game.play(take_moves())
+                try:
+                    for n, p in enumerate(game.polys, 1):
+                        i = input('Player {0} - Polyomino {1} >>> '.format(self.number, n))
+                        moveset.append(p.numbers_to_cells(int(n) for n in i.split(',')))
+                except (KeyError, IndexError, ValueError):
+                    retry()
+                return moveset
+            moveset = take_moves()
+            try:
+                game.play(moveset)
+            except IllegalMovesetException:
+                retry()
 
 
-class Game(Scene):
+class Game:
 
     def __init__(self, players=[0, 1], size_original=15):
         self.players = []
@@ -132,7 +139,6 @@ class Game(Scene):
     def main(self):
         while not all_equal(Polyomino(p.playfield) for p in self.polys):
             self.switch_turns()
-            self.show_board()
             self.players[self.turn].play(self)
         self.show_board()
         level = self.players[self.turn].level
@@ -162,9 +168,14 @@ class Game(Scene):
         return valids
 
     def play(self, moveset):
-        assert self.is_valid_moveset(moveset)
+        if not self.is_valid_moveset(moveset):
+            raise IllegalMovesetException
         for p, m in zip(self.polys, moveset):
             p.play(m)
+
+
+class IllegalMovesetException(Exception):
+    pass
 
 ########
 # Main #
@@ -241,8 +252,6 @@ options_credits = {}
 scenes = {
     'main': lambda: Scene((dialogue_main, options_main, 'exit')),
     'play': lambda: Scene((dialogue_pregame, options_pregame, 'main')),
-    '0': lambda: Game([0, 0]),
-    '1': lambda: Game([0, 1]),
     'instructions': lambda: Scene((dialogue_instructions, options_instructions, 'main')),
     'credits': lambda: Scene((dialogue_credits, options_credits, 'main')),
     'exit': lambda: exit()

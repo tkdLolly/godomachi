@@ -1,5 +1,5 @@
 # godomachi
-Console program based on https://godomachi.net/info.html
+Console program based on https://godomachi.net/info.html  
 Requires Python
 
 ```

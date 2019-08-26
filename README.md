@@ -2,6 +2,7 @@
 Console program based on https://godomachi.net/info.html
 Requires Python
 
+```
         ┌───┬───┐   ┌───┐
         │ · │ · │   │   │          
 ┌───┬───┼───┼───┘   ├───┤   ┌───┬───┐
@@ -21,3 +22,4 @@ Requires Python
     └───┼───┼───┘   └───┴───┼───┼───┘
         │   │               │   │  
         └───┘               └───┘
+```

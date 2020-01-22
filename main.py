@@ -5,10 +5,10 @@ import random
 from polyomino import Polyomino
 
 
-def all_equal(iterable):
+def all_equal(iterable):                            #recipes
     g = groupby(iterable)
     return next(g, True) and not next(g, False)
-def cls():
+def cls():                                          #stackoverflow
     os.system('cls' if os.name=='nt' else 'clear')
 
 title_godomati = Polyomino([

@@ -42,7 +42,7 @@ class Scene:
         print('      E - Exit\n')
 
     def take_input(self):
-        i = input('godomachi>>> ')
+        i = input('godomachi>>> ').upper()
         if i == 'E':
             scenes[self.exit_to]()
         try:
